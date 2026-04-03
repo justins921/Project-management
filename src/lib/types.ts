@@ -106,6 +106,51 @@ export interface TaskProject {
   color: string;
 }
 
+// Notes (Notion/Apple Notes-like)
+export type NoteColor = 'default' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  folderId?: string;
+  isPinned: boolean;
+  color: NoteColor;
+  createdAt: string;
+  updatedAt: string;
+  authorId?: string;
+}
+
+export interface NoteFolder {
+  id: string;
+  name: string;
+  icon?: string;
+}
+
+// SOPs (Standard Operating Procedures)
+export type SOPStatus = 'Draft' | 'Active' | 'Under Review' | 'Archived';
+export type SOPCategory = 'Client Onboarding' | 'Web Design' | 'SEO' | 'Social Media' | 'Content' | 'Development' | 'Internal' | 'Sales';
+
+export interface SOPStep {
+  title: string;
+  description: string;
+  isOptional?: boolean;
+}
+
+export interface SOP {
+  id: string;
+  title: string;
+  description: string;
+  category: SOPCategory;
+  status: SOPStatus;
+  steps: SOPStep[];
+  authorId: string;
+  lastReviewedBy?: string;
+  version: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Tools & Expenses
 export type ToolCategory = 'Design' | 'Development' | 'SEO' | 'Social Media' | 'Project Management' | 'Communication' | 'Analytics' | 'Hosting' | 'Other';
 export type BillingCycle = 'monthly' | 'yearly' | 'one-time' | 'free';
