@@ -67,6 +67,14 @@ export interface Message {
 // Email (Missive-like)
 export type EmailStatus = 'inbox' | 'in-progress' | 'waiting' | 'done' | 'archived';
 
+export interface SharedInbox {
+  id: string;
+  name: string;
+  email: string;
+  memberIds: string[];
+  color: string;
+}
+
 export interface Email {
   id: string;
   from: string;
@@ -81,6 +89,7 @@ export interface Email {
   labels?: string[];
   assigneeId?: string;
   clientId?: string;
+  sharedInboxId?: string;
 }
 
 // Tasks (Todoist-like)

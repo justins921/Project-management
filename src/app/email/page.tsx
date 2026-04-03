@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { emails, getTeamMember, getClient } from '@/lib/data';
-import { Email, EmailStatus } from '@/lib/types';
+import { emails, sharedInboxes, getTeamMember, getClient, teamMembers } from '@/lib/data';
+import { Email, EmailStatus, SharedInbox } from '@/lib/types';
 import Avatar from '@/components/Avatar';
 
 const folders: { status: EmailStatus | 'all'; label: string; icon: React.ReactNode }[] = [
@@ -33,13 +33,21 @@ export default function EmailPage() {
   const [emailList, setEmailList] = useState<Email[]>(emails);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [activeFolder, setActiveFolder] = useState<EmailStatus | 'all'>('inbox');
+  const [activeInbox, setActiveInbox] = useState<string | 'all'>('all');
   const [view, setView] = useState<'inbox' | 'board'>('inbox');
   const [dragOver, setDragOver] = useState<EmailStatus | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const filteredEmails = activeFolder === 'all'
+  // Filter by shared inbox first, then by folder/status
+  const inboxFilteredEmails = activeInbox === 'all'
     ? emailList
-    : emailList.filter(e => e.status === activeFolder);
+    : activeInbox === 'personal'
+    ? emailList.filter(e => !e.sharedInboxId)
+    : emailList.filter(e => e.sharedInboxId === activeInbox);
+
+  const filteredEmails = activeFolder === 'all'
+    ? inboxFilteredEmails
+    : inboxFilteredEmails.filter(e => e.status === activeFolder);
 
   const sortedEmails = [...filteredEmails].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -51,6 +59,15 @@ export default function EmailPage() {
     );
     if (selectedEmail?.id === emailId) {
       setSelectedEmail(prev => prev ? { ...prev, status: newStatus } : null);
+    }
+  }
+
+  function assignEmail(emailId: string, assigneeId: string) {
+    setEmailList(prev =>
+      prev.map(e => e.id === emailId ? { ...e, assigneeId } : e)
+    );
+    if (selectedEmail?.id === emailId) {
+      setSelectedEmail(prev => prev ? { ...prev, assigneeId } : null);
     }
   }
 
@@ -75,21 +92,93 @@ export default function EmailPage() {
     markRead(email.id);
   }
 
+  function getSharedInbox(id?: string): SharedInbox | undefined {
+    if (!id) return undefined;
+    return sharedInboxes.find(si => si.id === id);
+  }
+
   // Sidebar content
   const emailSidebar = (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-card-border">
-        <h2 className="text-lg font-bold text-foreground">Email</h2>
-        <p className="text-xs text-muted mt-0.5">{emailList.filter(e => !e.isRead).length} unread</p>
+      <div className="p-4 border-b border-[var(--border)]">
+        <h2 className="text-lg font-bold text-[var(--foreground)]">Email</h2>
+        <p className="text-xs text-[var(--muted)] mt-0.5">{emailList.filter(e => !e.isRead).length} unread</p>
       </div>
       <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+        {/* Shared Inboxes */}
+        <div className="px-2 pt-2 pb-1">
+          <p className="text-[10px] font-semibold text-[var(--muted)] uppercase tracking-widest">Inboxes</p>
+        </div>
+        <button
+          onClick={() => { setActiveInbox('all'); setSidebarOpen(false); }}
+          className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
+            activeInbox === 'all' ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-semibold' : 'text-[var(--foreground)] hover:bg-slate-100'
+          }`}
+        >
+          <span className="flex items-center gap-2.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            All Inboxes
+          </span>
+          <span className="text-xs text-[var(--muted)]">{emailList.filter(e => !e.isRead).length || ''}</span>
+        </button>
+        {sharedInboxes.map(inbox => {
+          const inboxEmails = emailList.filter(e => e.sharedInboxId === inbox.id);
+          const unread = inboxEmails.filter(e => !e.isRead).length;
+          return (
+            <button
+              key={inbox.id}
+              onClick={() => { setActiveInbox(inbox.id); setSidebarOpen(false); }}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
+                activeInbox === inbox.id ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-semibold' : 'text-[var(--foreground)] hover:bg-slate-100'
+              }`}
+            >
+              <span className="flex items-center gap-2.5">
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: inbox.color }} />
+                {inbox.name}
+              </span>
+              <div className="flex items-center gap-1.5">
+                {unread > 0 && (
+                  <span className="text-[10px] font-semibold bg-[var(--accent)] text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                    {unread}
+                  </span>
+                )}
+                {unread === 0 && inboxEmails.length > 0 && (
+                  <span className="text-xs text-[var(--muted)]">{inboxEmails.length}</span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+        {/* Personal emails (no shared inbox) */}
+        {emailList.some(e => !e.sharedInboxId) && (
+          <button
+            onClick={() => { setActiveInbox('personal'); setSidebarOpen(false); }}
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
+              activeInbox === 'personal' ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-semibold' : 'text-[var(--foreground)] hover:bg-slate-100'
+            }`}
+          >
+            <span className="flex items-center gap-2.5">
+              <span className="w-3 h-3 rounded-full bg-slate-400 shrink-0" />
+              Personal
+            </span>
+            <span className="text-xs text-[var(--muted)]">{emailList.filter(e => !e.sharedInboxId).length}</span>
+          </button>
+        )}
+
+        {/* Divider */}
+        <div className="px-2 pt-4 pb-1">
+          <p className="text-[10px] font-semibold text-[var(--muted)] uppercase tracking-widest">Folders</p>
+        </div>
+
         {folders.map(folder => {
           const count = folder.status === 'all'
-            ? emailList.length
-            : emailList.filter(e => e.status === folder.status).length;
+            ? inboxFilteredEmails.length
+            : inboxFilteredEmails.filter(e => e.status === folder.status).length;
           const unread = folder.status === 'all'
-            ? emailList.filter(e => !e.isRead).length
-            : emailList.filter(e => e.status === folder.status && !e.isRead).length;
+            ? inboxFilteredEmails.filter(e => !e.isRead).length
+            : inboxFilteredEmails.filter(e => e.status === folder.status && !e.isRead).length;
           const isActive = view === 'inbox' && activeFolder === folder.status;
 
           return (
@@ -98,8 +187,8 @@ export default function EmailPage() {
               onClick={() => { setActiveFolder(folder.status); setView('inbox'); setSidebarOpen(false); }}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
                 isActive
-                  ? 'bg-accent/10 text-accent font-semibold'
-                  : 'text-foreground hover:bg-slate-100'
+                  ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-semibold'
+                  : 'text-[var(--foreground)] hover:bg-slate-100'
               }`}
             >
               <span className="flex items-center gap-2.5">
@@ -108,12 +197,12 @@ export default function EmailPage() {
               </span>
               <div className="flex items-center gap-1.5">
                 {unread > 0 && (
-                  <span className="text-[10px] font-semibold bg-accent text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                  <span className="text-[10px] font-semibold bg-[var(--accent)] text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
                     {unread}
                   </span>
                 )}
                 {unread === 0 && count > 0 && (
-                  <span className="text-xs text-muted">{count}</span>
+                  <span className="text-xs text-[var(--muted)]">{count}</span>
                 )}
               </div>
             </button>
@@ -125,8 +214,8 @@ export default function EmailPage() {
             onClick={() => { setView('board'); setSidebarOpen(false); }}
             className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2.5 transition-colors ${
               view === 'board'
-                ? 'bg-accent/10 text-accent font-semibold'
-                : 'text-foreground hover:bg-slate-100'
+                ? 'bg-[var(--accent)]/10 text-[var(--accent)] font-semibold'
+                : 'text-[var(--foreground)] hover:bg-slate-100'
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,23 +232,24 @@ export default function EmailPage() {
   const inboxView = (
     <div className="flex-1 overflow-y-auto">
       {sortedEmails.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-muted">
-          <svg className="w-12 h-12 mb-3 text-muted/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex flex-col items-center justify-center py-16 text-[var(--muted)]">
+          <svg className="w-12 h-12 mb-3 text-[var(--muted)]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
           <p className="text-sm font-medium">No emails here</p>
         </div>
       ) : (
-        <div className="divide-y divide-card-border/50">
+        <div className="divide-y divide-[var(--border)]/50">
           {sortedEmails.map(email => {
             const assignee = email.assigneeId ? getTeamMember(email.assigneeId) : null;
             const client = email.clientId ? getClient(email.clientId) : null;
+            const inbox = getSharedInbox(email.sharedInboxId);
             return (
               <div
                 key={email.id}
                 onClick={() => openEmail(email)}
                 className={`flex items-start gap-3 px-4 sm:px-5 py-3.5 cursor-pointer hover:bg-slate-50/80 transition-colors ${
-                  !email.isRead ? 'bg-accent/[0.03]' : ''
+                  !email.isRead ? 'bg-[var(--accent)]/[0.03]' : ''
                 }`}
               >
                 <div className="mt-1.5 shrink-0">
@@ -167,25 +257,32 @@ export default function EmailPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className={`text-sm truncate ${!email.isRead ? 'font-semibold text-foreground' : 'font-medium text-foreground/80'}`}>
+                    <span className={`text-sm truncate ${!email.isRead ? 'font-semibold text-[var(--foreground)]' : 'font-medium text-[var(--foreground)]/80'}`}>
                       {email.from}
                     </span>
-                    {!email.isRead && <div className="w-2 h-2 rounded-full bg-accent shrink-0" />}
-                    <span className="text-xs text-muted ml-auto shrink-0">{formatDate(email.timestamp)}</span>
+                    {!email.isRead && <div className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0" />}
+                    <span className="text-xs text-[var(--muted)] ml-auto shrink-0">{formatDate(email.timestamp)}</span>
                   </div>
-                  <p className={`text-sm truncate ${!email.isRead ? 'font-medium text-foreground' : 'text-foreground/70'}`}>
+                  <p className={`text-sm truncate ${!email.isRead ? 'font-medium text-[var(--foreground)]' : 'text-[var(--foreground)]/70'}`}>
                     {email.subject}
                   </p>
-                  <p className="text-xs text-muted truncate mt-0.5">{email.preview}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5">
+                  <p className="text-xs text-[var(--muted)] truncate mt-0.5">{email.preview}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                     {activeFolder === 'all' && (
                       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusColors[email.status]}`} />
+                    )}
+                    {inbox && activeInbox === 'all' && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white" style={{ backgroundColor: inbox.color }}>
+                        {inbox.name}
+                      </span>
                     )}
                     {email.labels?.map(label => (
                       <span key={label} className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                         label === 'urgent' ? 'bg-red-50 text-red-600' :
                         label === 'client' ? 'bg-blue-50 text-blue-600' :
                         label === 'review' ? 'bg-amber-50 text-amber-600' :
+                        label === 'lead' ? 'bg-emerald-50 text-emerald-600' :
+                        label === 'bug' ? 'bg-red-50 text-red-600' :
                         'bg-slate-100 text-slate-600'
                       }`}>
                         {label}
@@ -216,14 +313,14 @@ export default function EmailPage() {
     <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
       <div className="flex gap-4 h-full min-w-max">
         {kanbanColumns.map(col => {
-          const colEmails = emailList
+          const colEmails = inboxFilteredEmails
             .filter(e => e.status === col.status)
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           return (
             <div
               key={col.status}
-              className={`w-[300px] flex flex-col rounded-xl transition-colors ${
-                dragOver === col.status ? 'bg-accent/5 ring-2 ring-accent/20' : 'bg-slate-50/80'
+              className={`w-[280px] sm:w-[300px] flex flex-col rounded-xl transition-colors ${
+                dragOver === col.status ? 'bg-[var(--accent)]/5 ring-2 ring-[var(--accent)]/20' : 'bg-slate-50/80'
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(col.status); }}
               onDragLeave={() => setDragOver(null)}
@@ -236,8 +333,8 @@ export default function EmailPage() {
             >
               <div className="px-3 py-3 flex items-center gap-2 shrink-0">
                 <div className={`w-2.5 h-2.5 rounded-full ${col.color}`} />
-                <span className="text-sm font-semibold text-foreground">{col.label}</span>
-                <span className="text-xs text-muted bg-white rounded-full px-1.5 py-0.5 border border-card-border">
+                <span className="text-sm font-semibold text-[var(--foreground)]">{col.label}</span>
+                <span className="text-xs text-[var(--muted)] bg-white rounded-full px-1.5 py-0.5 border border-[var(--border)]">
                   {colEmails.length}
                 </span>
               </div>
@@ -245,43 +342,45 @@ export default function EmailPage() {
                 {colEmails.map(email => {
                   const assignee = email.assigneeId ? getTeamMember(email.assigneeId) : null;
                   const client = email.clientId ? getClient(email.clientId) : null;
+                  const inbox = getSharedInbox(email.sharedInboxId);
                   return (
                     <div
                       key={email.id}
                       draggable
                       onDragStart={(e) => e.dataTransfer.setData('emailId', email.id)}
                       onClick={() => openEmail(email)}
-                      className={`bg-white rounded-lg border border-card-border p-3 cursor-pointer hover:shadow-md hover:border-accent/30 transition-all ${
-                        !email.isRead ? 'border-l-2 border-l-accent' : ''
+                      className={`bg-white rounded-lg border border-[var(--border)] p-3 cursor-pointer hover:shadow-md hover:border-[var(--accent)]/30 transition-all ${
+                        !email.isRead ? 'border-l-2 border-l-[var(--accent)]' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <p className={`text-sm truncate ${!email.isRead ? 'font-semibold text-foreground' : 'font-medium text-foreground/80'}`}>
+                        <p className={`text-sm truncate ${!email.isRead ? 'font-semibold text-[var(--foreground)]' : 'font-medium text-[var(--foreground)]/80'}`}>
                           {email.from}
                         </p>
-                        <span className="text-[10px] text-muted shrink-0">{formatDate(email.timestamp)}</span>
+                        <span className="text-[10px] text-[var(--muted)] shrink-0">{formatDate(email.timestamp)}</span>
                       </div>
-                      <p className={`text-sm truncate mb-1 ${!email.isRead ? 'font-medium text-foreground' : 'text-foreground/70'}`}>
+                      <p className={`text-sm truncate mb-1 ${!email.isRead ? 'font-medium text-[var(--foreground)]' : 'text-[var(--foreground)]/70'}`}>
                         {email.subject}
                       </p>
-                      <p className="text-xs text-muted truncate">{email.preview}</p>
-                      <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-card-border/50">
-                        <div className="flex gap-1 flex-wrap">
-                          {email.labels?.map(label => (
+                      <p className="text-xs text-[var(--muted)] truncate">{email.preview}</p>
+                      <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[var(--border)]/50">
+                        <div className="flex gap-1 flex-wrap min-w-0">
+                          {inbox && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium text-white shrink-0" style={{ backgroundColor: inbox.color }}>
+                              {inbox.name}
+                            </span>
+                          )}
+                          {email.labels?.slice(0, 2).map(label => (
                             <span key={label} className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                               label === 'urgent' ? 'bg-red-50 text-red-600' :
                               label === 'client' ? 'bg-blue-50 text-blue-600' :
                               label === 'review' ? 'bg-amber-50 text-amber-600' :
+                              label === 'lead' ? 'bg-emerald-50 text-emerald-600' :
                               'bg-slate-100 text-slate-600'
                             }`}>
                               {label}
                             </span>
                           ))}
-                          {client && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-violet-50 text-violet-600">
-                              {client.name}
-                            </span>
-                          )}
                         </div>
                         {assignee && <Avatar name={assignee.name} size="sm" />}
                       </div>
@@ -289,7 +388,7 @@ export default function EmailPage() {
                   );
                 })}
                 {colEmails.length === 0 && (
-                  <div className="text-center py-8 text-xs text-muted">No emails</div>
+                  <div className="text-center py-8 text-xs text-[var(--muted)]">No emails</div>
                 )}
               </div>
             </div>
@@ -300,14 +399,19 @@ export default function EmailPage() {
   );
 
   const currentFolderLabel = folders.find(f => f.status === activeFolder)?.label || 'Inbox';
+  const currentInboxLabel = activeInbox === 'all'
+    ? 'All Inboxes'
+    : activeInbox === 'personal'
+    ? 'Personal'
+    : sharedInboxes.find(si => si.id === activeInbox)?.name || '';
 
   return (
     <>
-      <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-2rem)] -m-4 sm:-m-6 lg:-m-8 bg-card-bg rounded-xl border border-card-border shadow-sm overflow-hidden">
+      <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-2rem)] -m-4 sm:-m-6 lg:-m-8 bg-[var(--card-bg)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
         {/* Mobile toggle */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed bottom-4 right-4 z-20 bg-accent text-white p-3 rounded-full shadow-lg hover:bg-accent-hover transition-colors"
+          className="lg:hidden fixed bottom-4 right-4 z-20 bg-[var(--accent)] text-white p-3 rounded-full shadow-lg hover:bg-[var(--accent)]/90 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
@@ -319,7 +423,7 @@ export default function EmailPage() {
         )}
 
         {/* Sidebar */}
-        <div className={`fixed lg:static z-20 top-14 lg:top-0 left-0 bottom-0 w-72 lg:w-56 bg-card-bg border-r border-card-border shrink-0 transition-transform duration-200 lg:translate-x-0 ${
+        <div className={`fixed lg:static z-20 top-14 lg:top-0 left-0 bottom-0 w-72 lg:w-60 bg-[var(--card-bg)] border-r border-[var(--border)] shrink-0 transition-transform duration-200 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}>
           {emailSidebar}
@@ -328,12 +432,27 @@ export default function EmailPage() {
         {/* Main area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Header */}
-          <div className="px-4 sm:px-5 py-3 border-b border-card-border flex items-center justify-between shrink-0">
-            <h2 className="text-base font-bold text-foreground">
-              {view === 'board' ? 'Board' : currentFolderLabel}
-            </h2>
+          <div className="px-4 sm:px-5 py-3 border-b border-[var(--border)] flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-1 -ml-1 rounded-lg hover:bg-[var(--muted)]/20 transition-colors"
+              >
+                <svg className="w-5 h-5 text-[var(--muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                </svg>
+              </button>
+              <div className="min-w-0">
+                <h2 className="text-base font-bold text-[var(--foreground)] truncate">
+                  {view === 'board' ? 'Board' : currentFolderLabel}
+                </h2>
+                {activeInbox !== 'all' && (
+                  <p className="text-[10px] text-[var(--muted)] truncate">{currentInboxLabel}</p>
+                )}
+              </div>
+            </div>
             {view === 'inbox' && (
-              <span className="text-xs text-muted">
+              <span className="text-xs text-[var(--muted)] shrink-0">
                 {sortedEmails.length} email{sortedEmails.length !== 1 ? 's' : ''}
               </span>
             )}
@@ -348,53 +467,83 @@ export default function EmailPage() {
       {selectedEmail && (
         <>
           <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setSelectedEmail(null)} />
-          <div className="fixed inset-4 sm:inset-y-8 sm:left-[20%] sm:right-[5%] lg:left-[30%] lg:right-[10%] z-50 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-card-border">
-            <div className="px-5 sm:px-6 py-4 border-b border-card-border flex items-start justify-between gap-3 shrink-0">
+          <div className="fixed inset-2 sm:inset-4 lg:inset-y-8 lg:left-[25%] lg:right-[5%] z-50 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[var(--border)]">
+            <div className="px-4 sm:px-6 py-4 border-b border-[var(--border)] flex items-start justify-between gap-3 shrink-0">
               <div className="min-w-0">
-                <h2 className="text-lg font-bold text-foreground">{selectedEmail.subject}</h2>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <h2 className="text-base sm:text-lg font-bold text-[var(--foreground)] leading-tight">{selectedEmail.subject}</h2>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <Avatar name={selectedEmail.from} size="sm" />
-                  <div>
-                    <span className="text-sm font-medium text-foreground">{selectedEmail.from}</span>
-                    <span className="text-xs text-muted ml-2">&lt;{selectedEmail.fromEmail}&gt;</span>
+                  <div className="min-w-0">
+                    <span className="text-sm font-medium text-[var(--foreground)]">{selectedEmail.from}</span>
+                    <span className="text-xs text-[var(--muted)] ml-1 hidden sm:inline">&lt;{selectedEmail.fromEmail}&gt;</span>
                   </div>
                 </div>
+                {getSharedInbox(selectedEmail.sharedInboxId) && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getSharedInbox(selectedEmail.sharedInboxId)!.color }} />
+                    <span className="text-xs text-[var(--muted)]">
+                      {getSharedInbox(selectedEmail.sharedInboxId)!.name} inbox
+                    </span>
+                  </div>
+                )}
               </div>
-              <button onClick={() => setSelectedEmail(null)} className="text-muted hover:text-foreground p-1 shrink-0">
+              <button onClick={() => setSelectedEmail(null)} className="text-[var(--muted)] hover:text-[var(--foreground)] p-1 shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5">
-              <div className="flex items-center gap-2 mb-4 text-xs text-muted flex-wrap">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
+              <div className="flex items-center gap-2 mb-4 text-xs text-[var(--muted)] flex-wrap">
                 <span>{new Date(selectedEmail.timestamp).toLocaleString()}</span>
                 <span>·</span>
                 <span>To: {selectedEmail.to}</span>
               </div>
-              <div className="prose prose-sm max-w-none text-foreground/90 whitespace-pre-line leading-relaxed">
+              <div className="prose prose-sm max-w-none text-[var(--foreground)]/90 whitespace-pre-line leading-relaxed text-sm">
                 {selectedEmail.body}
               </div>
             </div>
-            <div className="px-5 sm:px-6 py-3 border-t border-card-border flex items-center justify-between gap-2 shrink-0 flex-wrap">
-              <div className="flex gap-1 flex-wrap">
-                {kanbanColumns.map(col => (
-                  <button
-                    key={col.status}
-                    onClick={() => moveEmail(selectedEmail.id, col.status)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                      selectedEmail.status === col.status
-                        ? 'bg-accent text-white'
-                        : 'bg-slate-100 text-muted hover:bg-slate-200'
-                    }`}
-                  >
-                    {col.label}
-                  </button>
-                ))}
+            <div className="px-4 sm:px-6 py-3 border-t border-[var(--border)] shrink-0 space-y-2">
+              {/* Assign to team member */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-[var(--muted)] shrink-0">Assign:</span>
+                <div className="flex gap-1 flex-wrap">
+                  {teamMembers.map(member => {
+                    const isAssigned = selectedEmail.assigneeId === member.id;
+                    return (
+                      <button
+                        key={member.id}
+                        onClick={() => assignEmail(selectedEmail.id, member.id)}
+                        className={`p-0.5 rounded-full transition-all ${isAssigned ? 'ring-2 ring-[var(--accent)] ring-offset-1' : 'opacity-50 hover:opacity-100'}`}
+                        title={member.name}
+                      >
+                        <Avatar name={member.name} size="sm" />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-accent rounded-lg hover:bg-accent-hover transition-colors">
-                Reply
-              </button>
+              {/* Status + Reply */}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex gap-1 flex-wrap">
+                  {kanbanColumns.map(col => (
+                    <button
+                      key={col.status}
+                      onClick={() => moveEmail(selectedEmail.id, col.status)}
+                      className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                        selectedEmail.status === col.status
+                          ? 'bg-[var(--accent)] text-white'
+                          : 'bg-slate-100 text-[var(--muted)] hover:bg-slate-200'
+                      }`}
+                    >
+                      {col.label}
+                    </button>
+                  ))}
+                </div>
+                <button className="px-4 py-2 text-sm font-medium text-white bg-[var(--accent)] rounded-lg hover:bg-[var(--accent)]/90 transition-colors shrink-0">
+                  Reply
+                </button>
+              </div>
             </div>
           </div>
         </>

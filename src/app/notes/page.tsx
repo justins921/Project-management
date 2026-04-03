@@ -269,7 +269,7 @@ export default function NotesPage() {
   );
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] lg:h-screen flex flex-col">
+    <div className="h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-2rem)] flex flex-col -m-4 sm:-m-6 lg:-m-8 bg-[var(--card-bg)] rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[var(--border)] bg-white flex-shrink-0">
         <div className="flex items-center gap-3">

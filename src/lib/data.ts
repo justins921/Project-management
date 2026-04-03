@@ -1,4 +1,4 @@
-import { Client, Project, TeamMember, Channel, DirectMessage, Message, Email, Task, TaskProject, Tool, Note, NoteFolder, SOP } from './types';
+import { Client, Project, TeamMember, Channel, DirectMessage, Message, Email, SharedInbox, Task, TaskProject, Tool, Note, NoteFolder, SOP } from './types';
 
 export const teamMembers: TeamMember[] = [
   {
@@ -258,36 +258,42 @@ export const messages: Message[] = [
 
 // ============ Email Data ============
 
+export const sharedInboxes: SharedInbox[] = [
+  { id: 'si-1', name: 'Team', email: 'team@agency.com', memberIds: ['tm-1', 'tm-2', 'tm-3', 'tm-4', 'tm-5', 'tm-6'], color: '#3b82f6' },
+  { id: 'si-2', name: 'Sales', email: 'sales@agency.com', memberIds: ['tm-5', 'tm-6'], color: '#8b5cf6' },
+  { id: 'si-3', name: 'Support', email: 'support@agency.com', memberIds: ['tm-4', 'tm-5'], color: '#06b6d4' },
+];
+
 export const emails: Email[] = [
   {
     id: 'em-1', from: 'Dr. Robert Hayes', fromEmail: 'robert@oakwooddental.com', to: 'team@agency.com',
     subject: 'Re: Homepage Design Approval', preview: 'The design looks fantastic! We\'re ready to move forward with development...',
     body: 'Hi Lisa,\n\nThe design looks fantastic! We\'re ready to move forward with development. A couple of minor tweaks:\n\n1. Can we make the booking button more prominent?\n2. The patient testimonials section needs updated quotes — I\'ll send those over today.\n\nOtherwise, everything is approved. Great work to the team!\n\nBest,\nDr. Hayes',
-    timestamp: '2026-04-03T08:30:00Z', status: 'in-progress', isRead: true, labels: ['client'], assigneeId: 'tm-1', clientId: 'cl-1',
+    timestamp: '2026-04-03T08:30:00Z', status: 'in-progress', isRead: true, labels: ['client'], assigneeId: 'tm-1', clientId: 'cl-1', sharedInboxId: 'si-1',
   },
   {
     id: 'em-2', from: 'Jessica Torres', fromEmail: 'jessica@bloombarrel.com', to: 'team@agency.com',
     subject: 'New Menu Launch — Social Media Push', preview: 'We\'re launching our spring menu next week and would love a big social push...',
     body: 'Hi Emily,\n\nWe\'re launching our spring menu next week and would love a big social media push around it. Can we schedule a call to discuss the campaign? I have some ideas for reels and stories.\n\nAlso, the SEO work has been paying off — we\'re seeing more reservations coming through Google. Great job!\n\nThanks,\nJessica',
-    timestamp: '2026-04-03T07:45:00Z', status: 'inbox', isRead: false, labels: ['client', 'urgent'], assigneeId: 'tm-3', clientId: 'cl-2',
+    timestamp: '2026-04-03T07:45:00Z', status: 'inbox', isRead: false, labels: ['client', 'urgent'], assigneeId: 'tm-3', clientId: 'cl-2', sharedInboxId: 'si-1',
   },
   {
     id: 'em-3', from: 'Michael Chang', fromEmail: 'mchang@summitrealty.com', to: 'team@agency.com',
     subject: 'Monthly Analytics Report Request', preview: 'Can you send over the March analytics report for our social channels...',
     body: 'Hi team,\n\nCan you send over the March analytics report for our social media channels? We have a board meeting next week and I\'d like to include the social media ROI numbers.\n\nAlso, the Instagram reel you posted last week did really well — our agents are getting more inquiries. Keep it up!\n\nBest,\nMichael',
-    timestamp: '2026-04-02T16:20:00Z', status: 'inbox', isRead: true, labels: ['client'], assigneeId: 'tm-3', clientId: 'cl-3',
+    timestamp: '2026-04-02T16:20:00Z', status: 'inbox', isRead: true, labels: ['client'], assigneeId: 'tm-3', clientId: 'cl-3', sharedInboxId: 'si-1',
   },
   {
     id: 'em-4', from: 'Amanda Brooks', fromEmail: 'amanda@ironcladfitness.com', to: 'team@agency.com',
     subject: 'E-Commerce Store — Product Photos', preview: 'I have the product photos ready for the Shopify store. Where should I send them...',
     body: 'Hey team,\n\nI have the product photos ready for the Shopify store. Where should I send them? We have about 150 products to upload initially.\n\nAlso, I wanted to discuss the subscription model for our protein line. Can we set up a call?\n\nThanks,\nAmanda',
-    timestamp: '2026-04-02T14:00:00Z', status: 'waiting', isRead: true, labels: ['client'], assigneeId: 'tm-4', clientId: 'cl-4',
+    timestamp: '2026-04-02T14:00:00Z', status: 'waiting', isRead: true, labels: ['client'], assigneeId: 'tm-4', clientId: 'cl-4', sharedInboxId: 'si-1',
   },
   {
     id: 'em-5', from: 'Rachel Foster', fromEmail: 'rfoster@pinnaclelaw.com', to: 'team@agency.com',
     subject: 'Blog Post Review — Employment Law Guide', preview: 'I reviewed the latest blog post draft. A few legal accuracy corrections needed...',
     body: 'Hi James,\n\nI reviewed the latest blog post draft on employment law. A few corrections needed for legal accuracy:\n\n1. Section 3 needs to reference the updated 2026 regulations\n2. The disclaimer at the bottom should be updated per our legal team\'s template\n3. Great job on the structure and readability!\n\nPlease make the changes and send back for final approval.\n\nRegards,\nRachel Foster',
-    timestamp: '2026-04-02T11:30:00Z', status: 'in-progress', isRead: true, labels: ['client', 'review'], assigneeId: 'tm-6', clientId: 'cl-6',
+    timestamp: '2026-04-02T11:30:00Z', status: 'in-progress', isRead: true, labels: ['client', 'review'], assigneeId: 'tm-6', clientId: 'cl-6', sharedInboxId: 'si-1',
   },
   {
     id: 'em-6', from: 'Google Search Console', fromEmail: 'noreply@google.com', to: 'marcus@agency.com',
@@ -299,13 +305,37 @@ export const emails: Email[] = [
     id: 'em-7', from: 'Carlos Mendez', fromEmail: 'carlos@verdelandscaping.com', to: 'team@agency.com',
     subject: 'Website Feedback — Love It!', preview: 'Just wanted to say the website looks amazing. Our leads have increased by 40%...',
     body: 'Hi team,\n\nJust wanted to drop a note saying the website looks amazing! Since launch, our leads have increased by 40% and we\'re getting great feedback from customers about how easy it is to request quotes.\n\nWe\'d love to discuss adding a blog section in the future. Let me know when you\'re available.\n\nThanks for the great work!\nCarlos',
-    timestamp: '2026-04-01T10:15:00Z', status: 'done', isRead: true, labels: ['client'], clientId: 'cl-5',
+    timestamp: '2026-04-01T10:15:00Z', status: 'done', isRead: true, labels: ['client'], clientId: 'cl-5', sharedInboxId: 'si-1',
   },
   {
     id: 'em-8', from: 'Shopify Partners', fromEmail: 'partners@shopify.com', to: 'david@agency.com',
     subject: 'New Shopify API Updates — April 2026', preview: 'Important changes to the Shopify API that may affect your integrations...',
     body: 'Hi David,\n\nWe\'re writing to inform you about upcoming changes to the Shopify API:\n\n- New checkout extensibility features\n- Updated product variant limits\n- Deprecated endpoints being removed June 2026\n\nPlease review the changelog and update your integrations accordingly.\n\nBest,\nShopify Partners Team',
     timestamp: '2026-03-31T09:00:00Z', status: 'archived', isRead: true, labels: ['platform'],
+  },
+  {
+    id: 'em-9', from: 'Tom Richards', fromEmail: 'tom@greenfieldbrewing.com', to: 'sales@agency.com',
+    subject: 'Website Inquiry — Brewery & Taproom', preview: 'We\'re looking for an agency to redesign our website and handle social media...',
+    body: 'Hi there,\n\nI found your agency through a Google search and I\'m impressed by your portfolio. We\'re a craft brewery with a taproom and we need:\n\n1. A full website redesign (currently on an old WordPress theme)\n2. Social media management for Instagram and TikTok\n3. Local SEO to drive foot traffic\n\nOur budget is around $15-20k for the website and $2-3k/month for ongoing services. Could we set up a call this week?\n\nThanks,\nTom Richards\nGreenfield Brewing Co.',
+    timestamp: '2026-04-03T10:30:00Z', status: 'inbox', isRead: false, labels: ['lead'], sharedInboxId: 'si-2',
+  },
+  {
+    id: 'em-10', from: 'Sarah Mitchell', fromEmail: 'sarah.m@luxerealestate.com', to: 'sales@agency.com',
+    subject: 'Re: Digital Marketing Proposal', preview: 'Thank you for the proposal. We\'d like to move forward with the SEO package...',
+    body: 'Hi Lisa,\n\nThank you for the detailed proposal. After discussing with our team, we\'d like to move forward with the SEO + Content Marketing package.\n\nA few questions:\n1. Can we start with a 3-month trial period?\n2. Do you offer any volume discounts for multiple properties?\n3. What\'s the typical timeline to see SEO results?\n\nLooking forward to working together.\n\nBest,\nSarah Mitchell\nLuxe Real Estate Group',
+    timestamp: '2026-04-02T15:45:00Z', status: 'in-progress', isRead: true, labels: ['lead'], assigneeId: 'tm-5', sharedInboxId: 'si-2',
+  },
+  {
+    id: 'em-11', from: 'Carlos Mendez', fromEmail: 'carlos@verdelandscaping.com', to: 'support@agency.com',
+    subject: 'Contact Form Not Working', preview: 'Our website contact form stopped sending email notifications yesterday...',
+    body: 'Hi support team,\n\nOur website contact form stopped sending email notifications yesterday. We\'ve had a few customers call in saying they submitted a form but we never received it.\n\nCan someone look into this ASAP? We don\'t want to lose any leads.\n\nThanks,\nCarlos',
+    timestamp: '2026-04-03T08:15:00Z', status: 'inbox', isRead: false, labels: ['urgent', 'bug'], clientId: 'cl-5', sharedInboxId: 'si-3',
+  },
+  {
+    id: 'em-12', from: 'Amanda Brooks', fromEmail: 'amanda@ironcladfitness.com', to: 'support@agency.com',
+    subject: 'Shopify Store — Payment Gateway Question', preview: 'Quick question about the payment gateway options for the new store...',
+    body: 'Hi team,\n\nQuick question about the Shopify store we\'re building. Which payment gateway do you recommend?\n\n- Shopify Payments (simple but higher fees)\n- Stripe (more flexibility)\n- PayPal as an additional option?\n\nAlso, do we need a separate gateway for the subscription products?\n\nThanks,\nAmanda',
+    timestamp: '2026-04-02T09:00:00Z', status: 'waiting', isRead: true, labels: ['client'], assigneeId: 'tm-4', clientId: 'cl-4', sharedInboxId: 'si-3',
   },
 ];
 
