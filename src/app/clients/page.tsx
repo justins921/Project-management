@@ -23,21 +23,21 @@ export default function ClientsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Clients</h1>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Clients</h1>
           <p className="text-sm text-muted mt-1">
             {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Link
           href="/clients/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors shadow-sm shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          New Client
+          <span className="hidden sm:inline">New Client</span>
         </Link>
       </div>
 

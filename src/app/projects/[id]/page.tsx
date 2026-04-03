@@ -46,17 +46,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       </nav>
 
       {/* Header */}
-      <div className="bg-card-bg rounded-xl border border-card-border p-6 shadow-sm">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
+      <div className="bg-card-bg rounded-xl border border-card-border p-4 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">{project.name}</h1>
             <p className="text-muted mt-1">
               <Link href={`/clients/${client?.id}`} className="hover:text-accent transition-colors">
                 {client?.name}
               </Link>
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <StatusBadge status={project.status} />
             <ServiceBadge service={project.service} />
           </div>

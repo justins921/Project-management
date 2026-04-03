@@ -27,11 +27,11 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       </nav>
 
       {/* Client Header */}
-      <div className="bg-card-bg rounded-xl border border-card-border p-6 shadow-sm">
-        <div className="flex items-start gap-5">
+      <div className="bg-card-bg rounded-xl border border-card-border p-4 sm:p-6 shadow-sm">
+        <div className="flex items-start gap-4 sm:gap-5">
           <Avatar name={client.name} size="lg" />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">{client.name}</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{client.name}</h1>
             {client.company && (
               <p className="text-sm text-muted mt-0.5">{client.company}</p>
             )}
@@ -88,36 +88,38 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               <Link
                 key={project.id}
                 href={`/projects/${project.id}`}
-                className="flex items-center justify-between p-5 hover:bg-slate-50/50 transition-colors"
+                className="block p-4 sm:p-5 hover:bg-slate-50/50 transition-colors"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-sm font-semibold text-foreground hover:text-accent transition-colors">
-                      {project.name}
-                    </h3>
-                    <StatusBadge status={project.status} />
-                    <ServiceBadge service={project.service} />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="text-sm font-semibold text-foreground hover:text-accent transition-colors">
+                        {project.name}
+                      </h3>
+                      <StatusBadge status={project.status} />
+                      <ServiceBadge service={project.service} />
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted flex-wrap">
+                      <span>{project.platform} · {project.hostingLocation}</span>
+                      <span>
+                        {new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {' — '}
+                        {new Date(project.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-muted">
-                    <span>{project.platform} · {project.hostingLocation}</span>
-                    <span>
-                      {new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      {' — '}
-                      {new Date(project.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
+                  <div className="flex items-center gap-3 sm:ml-4">
+                    <div className="flex -space-x-2">
+                      {members.slice(0, 3).map((m) => (
+                        <Avatar key={m!.id} name={m!.name} size="sm" />
+                      ))}
+                    </div>
+                    {project.budget && (
+                      <span className="text-sm font-semibold text-foreground">
+                        ${project.budget.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                </div>
-                <div className="flex items-center gap-4 ml-4">
-                  <div className="flex -space-x-2">
-                    {members.slice(0, 3).map((m) => (
-                      <Avatar key={m!.id} name={m!.name} size="sm" />
-                    ))}
-                  </div>
-                  {project.budget && (
-                    <span className="text-sm font-semibold text-foreground">
-                      ${project.budget.toLocaleString()}
-                    </span>
-                  )}
                 </div>
               </Link>
             );

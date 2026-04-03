@@ -41,29 +41,29 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Projects</h1>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Projects</h1>
           <p className="text-sm text-muted mt-1">
             {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Link
           href="/projects/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors shadow-sm shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          New Project
+          <span className="hidden sm:inline">New Project</span>
         </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-card-bg rounded-xl border border-card-border p-4 shadow-sm">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="bg-card-bg rounded-xl border border-card-border p-3 sm:p-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
           {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative sm:flex-1 sm:min-w-[200px]">
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted"
               fill="none"
@@ -87,8 +87,8 @@ export default function ProjectsPage() {
           </div>
 
           {/* Status filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted">Status:</span>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <span className="text-xs font-medium text-muted shrink-0">Status:</span>
             <div className="flex gap-1">
               {statuses.map((status) => (
                 <button

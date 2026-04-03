@@ -61,37 +61,37 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted mt-1">Welcome back. Here&apos;s what&apos;s happening with your projects.</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted mt-1 hidden sm:block">Welcome back. Here&apos;s what&apos;s happening with your projects.</p>
         </div>
         <Link
           href="/projects/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors shadow-sm shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          New Project
+          <span className="hidden sm:inline">New Project</span>
         </Link>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-card-bg rounded-xl border border-card-border p-5 shadow-sm hover:shadow-md transition-shadow"
+            className="bg-card-bg rounded-xl border border-card-border p-3 sm:p-5 shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted">{stat.label}</p>
-                <p className={`text-2xl font-bold mt-1 ${stat.color}`}>
+                <p className={`text-xl sm:text-2xl font-bold mt-1 ${stat.color}`}>
                   {stat.value}
                 </p>
               </div>
-              <div className={`${stat.bg} ${stat.color} p-3 rounded-xl`}>
+              <div className={`${stat.bg} ${stat.color} p-2.5 sm:p-3 rounded-xl hidden sm:flex`}>
                 {stat.icon}
               </div>
             </div>
@@ -113,7 +113,35 @@ export default function Dashboard() {
             View all →
           </Link>
         </div>
-        <div className="overflow-x-auto">
+        {/* Mobile: card list */}
+        <div className="sm:hidden divide-y divide-card-border/50">
+          {activeProjects.map((project) => {
+            const client = getClient(project.clientId);
+            return (
+              <Link
+                key={project.id}
+                href={`/projects/${project.id}`}
+                className="block p-4 hover:bg-slate-50/50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <p className="text-sm font-medium text-foreground">{project.name}</p>
+                  <StatusBadge status={project.status} />
+                </div>
+                <p className="text-xs text-muted mb-2">{client?.name}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <ServiceBadge service={project.service} />
+                  <span className="text-xs text-muted">
+                    {new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {' — '}
+                    {new Date(project.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        {/* Desktop: table */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-card-border bg-slate-50/50">

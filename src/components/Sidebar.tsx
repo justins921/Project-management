@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   {
@@ -44,9 +45,27 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <aside className="w-64 bg-sidebar-bg min-h-screen flex flex-col fixed left-0 top-0 z-30">
+  // Close drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
+
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div className="px-6 py-6 border-b border-white/10">
         <h1 className="text-xl font-bold text-white tracking-tight">
@@ -91,6 +110,56 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile header bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-sidebar-bg h-14 flex items-center px-4 gap-3">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="text-white p-1.5 -ml-1.5 rounded-lg hover:bg-sidebar-hover transition-colors"
+          aria-label="Open menu"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        <h1 className="text-lg font-bold text-white tracking-tight">ProjectHub</h1>
+      </div>
+
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={`lg:hidden fixed top-0 left-0 z-50 w-72 bg-sidebar-bg min-h-screen flex flex-col transition-transform duration-300 ease-in-out ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="absolute top-4 right-3 text-sidebar-text/50 hover:text-white p-1 rounded-lg transition-colors"
+          aria-label="Close menu"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 bg-sidebar-bg min-h-screen flex-col fixed left-0 top-0 z-30">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

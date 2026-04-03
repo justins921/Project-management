@@ -124,7 +124,7 @@ export default function NewProjectPage() {
           {/* Team Members */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Team Members</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {teamMembers.map((member) => (
                 <label
                   key={member.id}

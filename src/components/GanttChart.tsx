@@ -77,10 +77,10 @@ export default function GanttChart({ projects }: GanttChartProps) {
         <h2 className="text-lg font-semibold text-foreground">Project Timeline</h2>
       </div>
       <div className="overflow-x-auto">
-        <div className="min-w-[900px]">
+        <div className="min-w-[700px] sm:min-w-[900px]">
           {/* Month headers */}
           <div className="flex border-b border-card-border bg-slate-50/50 relative">
-            <div className="w-72 shrink-0 px-4 py-2.5 text-xs font-medium text-muted uppercase tracking-wider">
+            <div className="w-48 sm:w-72 shrink-0 px-4 py-2.5 text-xs font-medium text-muted uppercase tracking-wider">
               Project
             </div>
             <div className="flex-1 relative">
@@ -116,7 +116,7 @@ export default function GanttChart({ projects }: GanttChartProps) {
                 key={project.id}
                 className="flex items-center border-b border-card-border/50 hover:bg-slate-50/50 transition-colors"
               >
-                <div className="w-72 shrink-0 px-4 py-3">
+                <div className="w-48 sm:w-72 shrink-0 px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div>
                       <p className="text-sm font-medium text-foreground truncate max-w-[200px]">
