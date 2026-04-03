@@ -71,6 +71,15 @@ const toolsNav = [
       </svg>
     ),
   },
+  {
+    name: 'Tools',
+    href: '/tools',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.42 15.17l-5.6 5.6a2.12 2.12 0 01-3-3l5.6-5.6m3-3l1.17-1.17a3.18 3.18 0 014.5 0l.7.7a3.18 3.18 0 010 4.5l-1.17 1.17m-5.2-5.2l5.2 5.2M7.04 10.09L4.5 12.6a2.12 2.12 0 000 3l.7.7a2.12 2.12 0 003 0l2.54-2.54" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {

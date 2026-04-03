@@ -105,3 +105,19 @@ export interface TaskProject {
   name: string;
   color: string;
 }
+
+// Tools & Expenses
+export type ToolCategory = 'Design' | 'Development' | 'SEO' | 'Social Media' | 'Project Management' | 'Communication' | 'Analytics' | 'Hosting' | 'Other';
+export type BillingCycle = 'monthly' | 'yearly' | 'one-time' | 'free';
+
+export interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  category: ToolCategory;
+  url?: string;
+  loginInfo: string;
+  cost: number;
+  billingCycle: BillingCycle;
+  icon?: string;
+}

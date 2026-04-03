@@ -1,4 +1,4 @@
-import { Client, Project, TeamMember, Channel, DirectMessage, Message, Email, Task, TaskProject } from './types';
+import { Client, Project, TeamMember, Channel, DirectMessage, Message, Email, Task, TaskProject, Tool } from './types';
 
 export const teamMembers: TeamMember[] = [
   {
@@ -343,6 +343,29 @@ export const tasks: Task[] = [
   { id: 'tk-13', title: 'Verde Landscaping site launch QA', completed: true, priority: 1, dueDate: '2026-04-01', projectId: 'tp-6', assigneeId: 'tm-4', labels: ['dev', 'qa'], createdAt: '2026-03-25T10:00:00Z' },
   { id: 'tk-14', title: 'Bloom & Barrel keyword research update', completed: true, priority: 2, dueDate: '2026-04-02', projectId: 'tp-2', assigneeId: 'tm-2', labels: ['seo'], createdAt: '2026-03-28T10:00:00Z' },
   { id: 'tk-15', title: 'Summit Realty Instagram reel — spring listings', completed: true, priority: 2, dueDate: '2026-04-02', projectId: 'tp-3', assigneeId: 'tm-3', labels: ['social'], createdAt: '2026-03-30T10:00:00Z' },
+];
+
+// ============ Tools & Expenses Data ============
+
+export const tools: Tool[] = [
+  { id: 'tl-1', name: 'Figma', description: 'UI/UX design and prototyping for all client projects', category: 'Design', loginInfo: '1Password → Design vault', cost: 45, billingCycle: 'monthly', icon: '🎨' },
+  { id: 'tl-2', name: 'Adobe Creative Cloud', description: 'Photoshop, Illustrator, After Effects for graphics and video', category: 'Design', loginInfo: '1Password → Design vault', cost: 89.99, billingCycle: 'monthly', icon: '🖌️' },
+  { id: 'tl-3', name: 'GitHub', description: 'Code repositories and version control for all dev projects', category: 'Development', loginInfo: '1Password → Dev vault', cost: 25, billingCycle: 'monthly', icon: '💻' },
+  { id: 'tl-4', name: 'Vercel', description: 'Hosting and deployment for Next.js projects', category: 'Hosting', loginInfo: '1Password → Dev vault', cost: 20, billingCycle: 'monthly', icon: '▲' },
+  { id: 'tl-5', name: 'SiteGround', description: 'WordPress hosting for Oakwood Dental and other WP sites', category: 'Hosting', loginInfo: '1Password → Hosting vault', cost: 29.99, billingCycle: 'monthly', icon: '🌐' },
+  { id: 'tl-6', name: 'WP Engine', description: 'Managed WordPress hosting for Pinnacle Law', category: 'Hosting', loginInfo: '1Password → Hosting vault', cost: 30, billingCycle: 'monthly', icon: '🌐' },
+  { id: 'tl-7', name: 'Ahrefs', description: 'SEO research, keyword tracking, and competitor analysis', category: 'SEO', loginInfo: '1Password → SEO vault', cost: 199, billingCycle: 'monthly', icon: '🔍' },
+  { id: 'tl-8', name: 'Google Search Console', description: 'Search performance monitoring for all client sites', category: 'SEO', loginInfo: 'Google Workspace SSO', cost: 0, billingCycle: 'free', icon: '📊' },
+  { id: 'tl-9', name: 'Semrush', description: 'SEO audits, position tracking, and content optimization', category: 'SEO', loginInfo: '1Password → SEO vault', cost: 129.95, billingCycle: 'monthly', icon: '📈' },
+  { id: 'tl-10', name: 'Buffer', description: 'Social media scheduling and analytics for all client accounts', category: 'Social Media', loginInfo: '1Password → Social vault', cost: 60, billingCycle: 'monthly', icon: '📱' },
+  { id: 'tl-11', name: 'Canva Pro', description: 'Quick social media graphics and story templates', category: 'Social Media', loginInfo: '1Password → Social vault', cost: 12.99, billingCycle: 'monthly', icon: '✨' },
+  { id: 'tl-12', name: 'Google Analytics 4', description: 'Website analytics and conversion tracking for all clients', category: 'Analytics', loginInfo: 'Google Workspace SSO', cost: 0, billingCycle: 'free', icon: '📊' },
+  { id: 'tl-13', name: 'Hotjar', description: 'Heatmaps and session recordings for UX insights', category: 'Analytics', loginInfo: '1Password → Analytics vault', cost: 39, billingCycle: 'monthly', icon: '🔥' },
+  { id: 'tl-14', name: 'Slack', description: 'Internal team communication and client channels', category: 'Communication', loginInfo: 'Google Workspace SSO', cost: 8.75, billingCycle: 'monthly', icon: '💬' },
+  { id: 'tl-15', name: 'Google Workspace', description: 'Email, Drive, Docs, and Sheets for the whole team', category: 'Communication', loginInfo: 'admin@agency.com — IT vault', cost: 72, billingCycle: 'monthly', icon: '📧' },
+  { id: 'tl-16', name: 'Notion', description: 'Internal wiki, SOPs, and knowledge base', category: 'Project Management', loginInfo: '1Password → PM vault', cost: 10, billingCycle: 'monthly', icon: '📝' },
+  { id: 'tl-17', name: 'Loom', description: 'Video walkthroughs for client presentations and internal docs', category: 'Communication', loginInfo: '1Password → PM vault', cost: 12.50, billingCycle: 'monthly', icon: '🎥' },
+  { id: 'tl-18', name: 'Shopify Partners', description: 'Development store access for e-commerce projects', category: 'Development', loginInfo: '1Password → Dev vault', cost: 0, billingCycle: 'free', icon: '🛒' },
 ];
 
 // ============ Helper Functions ============
