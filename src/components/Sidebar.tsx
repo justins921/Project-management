@@ -249,7 +249,7 @@ export default function Sidebar() {
       )}
 
       <aside
-        className={`lg:hidden fixed top-0 left-0 z-50 w-72 bg-sidebar-bg min-h-screen flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-sidebar-bg flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -265,7 +265,7 @@ export default function Sidebar() {
         {sidebarContent}
       </aside>
 
-      <aside className="hidden lg:flex w-64 bg-sidebar-bg min-h-screen flex-col fixed left-0 top-0 z-30">
+      <aside className="hidden lg:flex w-64 bg-sidebar-bg h-screen flex-col fixed left-0 top-0 z-30 overflow-hidden">
         {sidebarContent}
       </aside>
     </>
