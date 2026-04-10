@@ -2,20 +2,28 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function updateSession(request: NextRequest) {
+  // If Supabase env vars are not configured, pass through without auth
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
@@ -36,7 +44,7 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Public routes that don't require auth
-  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/accept-invite'];
+  const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/accept-invite', '/reports/'];
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
   // If not logged in and not on a public route, redirect to login
@@ -49,7 +57,6 @@ export async function updateSession(request: NextRequest) {
 
   // If logged in and on login/signup, redirect to appropriate dashboard
   if (user && (pathname === '/login' || pathname === '/signup')) {
-    // Fetch user profile to determine role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -92,7 +99,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Main app routes — not for clients
-    const appRoutes = ['/', '/clients', '/projects', '/tasks', '/team', '/sops', '/notes', '/tools', '/messages', '/email', '/settings', '/support', '/reports'];
+    const appRoutes = ['/', '/clients', '/projects', '/tasks', '/team', '/sops', '/notes', '/tools', '/messages', '/email', '/settings', '/support', '/requests', '/site-health'];
     const isAppRoute = appRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
     if (isAppRoute && role === 'client') {
       const url = request.nextUrl.clone();
