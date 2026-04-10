@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import type { Profile, Tenant } from '@/lib/types/database';
 
 interface NavItem {
@@ -74,33 +74,43 @@ export default function Sidebar() {
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
+      if (!isSupabaseConfigured()) {
+        // No Supabase configured — show sidebar with defaults
+        setLoading(false);
+        return;
+      }
 
-      const { data: p } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      setProfile(p as Profile | null);
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setLoading(false); return; }
 
-      if (p) {
-        if (p.role === 'owner') {
-          const { data: t } = await supabase
-            .from('tenants')
-            .select('*')
-            .eq('owner_id', user.id)
-            .single();
-          setTenant(t as Tenant | null);
-        } else if (p.tenant_id) {
-          const { data: t } = await supabase
-            .from('tenants')
-            .select('*')
-            .eq('id', p.tenant_id)
-            .single();
-          setTenant(t as Tenant | null);
+        const { data: p } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        setProfile(p as Profile | null);
+
+        if (p) {
+          if (p.role === 'owner') {
+            const { data: t } = await supabase
+              .from('tenants')
+              .select('*')
+              .eq('owner_id', user.id)
+              .single();
+            setTenant(t as Tenant | null);
+          } else if (p.tenant_id) {
+            const { data: t } = await supabase
+              .from('tenants')
+              .select('*')
+              .eq('id', p.tenant_id)
+              .single();
+            setTenant(t as Tenant | null);
+          }
         }
+      } catch {
+        // Supabase connection failed — continue with defaults
       }
       setLoading(false);
     }

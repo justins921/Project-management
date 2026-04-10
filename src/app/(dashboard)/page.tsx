@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import Link from 'next/link';
 
 interface Profile {
@@ -820,6 +820,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function loadUserData() {
+      if (!isSupabaseConfigured()) {
+        // Show demo/setup state when Supabase isn't configured
+        setProfile({ id: '', full_name: 'Agency Owner', email: '', role: 'owner', tenant_id: '', avatar_url: null });
+        setTenant({ id: '', agency_name: 'Solo Agency OS' });
+        setLoading(false);
+        return;
+      }
+
       const supabase = createClient();
 
       const {
